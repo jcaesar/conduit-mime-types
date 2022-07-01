@@ -20,35 +20,50 @@ fn main() {
     let mut file = BufWriter::new(File::create(&path).unwrap());
 
     let mut used_exts = HashSet::new();
-    let mut ext_by_type = phf_codegen::Map::new();
-    let mut type_by_ext = phf_codegen::Map::new();
+    let mut ext_by_type = vec![];
+    let mut type_by_ext = vec![];
 
     for (mime_type, record) in json.iter() {
-        let mime_type_value = format!("\"{}\"", mime_type);
+        let mime_type_str = format!("\"{}\"", mime_type);
         let exts = &record.extensions;
 
         for ext in exts {
             if used_exts.insert(ext) {
-                type_by_ext.entry(ext, &mime_type_value);
+                type_by_ext.push(format!(r#""{}" => Some("{}")"#, ext, mime_type));
             }
         }
 
-        let exts: Vec<_> = exts.iter().map(|ext| format!("\"{}\"", ext)).collect();
-        let exts = format!("&[{}]", exts.join(", "));
-        ext_by_type.entry(mime_type, &exts);
+        ext_by_type.push(format!(
+            r#""{}" => Some(&[{}])"#,
+            mime_type,
+            exts.iter()
+                .map(|ext| format!("\"{}\"", ext))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
     }
 
     writeln!(
         &mut file,
-        "static EXT_BY_TYPE: phf::Map<&'static str, &[&'static str]> = \n{};\n",
-        ext_by_type.build()
+        r#"fn gen_get_extension(name: &str) -> Option<&[&str]> {{
+            match name {{
+                {},
+                _ => None
+            }}
+        }}"#,
+        ext_by_type.join(",\n            ")
     )
     .unwrap();
 
     writeln!(
         &mut file,
-        "static TYPE_BY_EXT: phf::Map<&'static str, &'static str> = \n{};\n",
-        type_by_ext.build()
+        r#"fn gen_get_mime_type(ext: &str) -> Option<&str> {{
+            match ext {{
+                {},
+                _ => None
+            }}
+        }}"#,
+        type_by_ext.join(",\n            ")
     )
     .unwrap();
 }

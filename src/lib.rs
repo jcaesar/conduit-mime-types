@@ -3,11 +3,11 @@ use std::path::Path;
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 pub fn get_extension(name: &str) -> Option<&[&str]> {
-    EXT_BY_TYPE.get(name).copied()
+    gen_get_extension(name)
 }
 
 pub fn get_mime_type(ext: &str) -> Option<&str> {
-    TYPE_BY_EXT.get(ext).copied()
+    gen_get_mime_type(ext)
 }
 
 pub fn mime_for_path(path: &Path) -> Option<&str> {
