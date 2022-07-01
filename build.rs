@@ -22,19 +22,29 @@ fn main() {
     let mut used_exts = HashSet::new();
     let mut ext_by_type = vec![];
     let mut type_by_ext = vec![];
+    let mut ext_to_type = vec![];
+    let mut type_to_ext = vec![];
 
     for (mime_type, record) in json.iter() {
-        let mime_type_str = format!("\"{}\"", mime_type);
         let exts = &record.extensions;
 
         for ext in exts {
             if used_exts.insert(ext) {
                 type_by_ext.push(format!(r#""{}" => Some("{}")"#, ext, mime_type));
+                type_to_ext.push(format!(r#"("{}", "{}")"#, ext, mime_type));
             }
         }
 
         ext_by_type.push(format!(
             r#""{}" => Some(&[{}])"#,
+            mime_type,
+            exts.iter()
+                .map(|ext| format!("\"{}\"", ext))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+        ext_to_type.push(format!(
+            r#"("{}", &[{}])"#,
             mime_type,
             exts.iter()
                 .map(|ext| format!("\"{}\"", ext))
@@ -64,6 +74,22 @@ fn main() {
             }}
         }}"#,
         type_by_ext.join(",\n            ")
+    )
+    .unwrap();
+
+    writeln!(
+        &mut file,
+        r#"pub static EXT_BY_MIME: [(&'static str, &'static [&'static str]);{}] = [{}];"#,
+        ext_to_type.len(),
+        ext_to_type.join(",\n    ")
+    )
+    .unwrap();
+
+    writeln!(
+        &mut file,
+        r#"pub static MIME_BY_EXT: [(&'static str, &'static str);{}] = [{}];"#,
+        type_to_ext.len(),
+        type_to_ext.join(",\n    ")
     )
     .unwrap();
 }
