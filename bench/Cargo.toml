@@ -9,3 +9,4 @@ crate-type = ["cdylib"]
 [dependencies]
 conduit-mime-types = "0.8.0"
 cmtm = { package= "conduit-mime-types", path = ".." }
+xxh3 = "0.1.1"
