@@ -1,6 +1,41 @@
-use std::path::Path;
+use std::{
+    hash::{BuildHasher, Hash, Hasher},
+    path::Path,
+};
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+
+#[derive(Clone)]
+pub struct XXH3Hasher(u64);
+impl BuildHasher for XXH3Hasher {
+    type Hasher = XXH3Hasher;
+
+    fn build_hasher(&self) -> Self::Hasher {
+        self.clone()
+    }
+}
+impl Hasher for XXH3Hasher {
+    fn finish(&self) -> u64 {
+        self.0
+    }
+    fn write(&mut self, bytes: &[u8]) {
+        self.0 = xxh3::hash64_with_seed(bytes, self.0);
+    }
+}
+fn hashmap_from<K: Copy + Eq + Hash, V: Copy>(d: &[(K, V)]) -> HashMap<K, V, XXH3Hasher> {
+    let mut m = HashMap::with_capacity_and_hasher(d.len(), XXH3Hasher(42));
+    for (k, v) in d {
+        m.insert(*k, *v);
+    }
+    m
+}
+pub static EXT_BY_MIME: Lazy<HashMap<&'static str, &'static [&'static str], XXH3Hasher>> =
+    Lazy::new(|| hashmap_from(&EXT_BY_MIME_DATA));
+pub static MIME_BY_EXT: Lazy<HashMap<&'static str, &'static str, XXH3Hasher>> =
+    Lazy::new(|| hashmap_from(&MIME_BY_EXT_DATA));
 
 pub fn get_extension(name: &str) -> Option<&[&str]> {
     gen_get_extension(name)

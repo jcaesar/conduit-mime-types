@@ -53,21 +53,35 @@ mod bench {
 
     #[bench]
     fn bench_hashmap_e2m(b: &mut Bencher) {
-        let t = HashMap::from(cmtm::MIME_BY_EXT);
         b.iter(|| {
             for kw in test::black_box(TEST_EXT) {
-                test::black_box(t.get(kw));
+                test::black_box(cmtm::MIME_BY_EXT.get(kw));
             }
         });
     }
 
     #[bench]
     fn bench_hashmap_m2e(b: &mut Bencher) {
-        let t: HashMap<&str, &str> = HashMap::from(cmtm::MIME_BY_EXT);
         b.iter(|| {
             for kw in test::black_box(TEST_MIME) {
-                test::black_box(t.get(kw));
+                test::black_box(cmtm::EXT_BY_MIME.get(kw));
             }
+        });
+    }
+
+    #[bench]
+    fn bench_hashmap_e2m_create(b: &mut Bencher) {
+        b.iter(|| {
+            let t = HashMap::from(cmtm::MIME_BY_EXT_DATA);
+            test::black_box(t);
+        });
+    }
+
+    #[bench]
+    fn bench_hashmap_m2e_create(b: &mut Bencher) {
+        b.iter(|| {
+            let t: HashMap<&str, &str> = HashMap::from(cmtm::MIME_BY_EXT_DATA);
+            test::black_box(t);
         });
     }
 }

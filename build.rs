@@ -79,7 +79,7 @@ fn main() {
 
     writeln!(
         &mut file,
-        r#"pub static EXT_BY_MIME: [(&'static str, &'static [&'static str]);{}] = [{}];"#,
+        r#"pub static EXT_BY_MIME_DATA: [(&'static str, &'static [&'static str]);{}] = [{}];"#,
         ext_to_type.len(),
         ext_to_type.join(",\n    ")
     )
@@ -87,7 +87,7 @@ fn main() {
 
     writeln!(
         &mut file,
-        r#"pub static MIME_BY_EXT: [(&'static str, &'static str);{}] = [{}];"#,
+        r#"pub static MIME_BY_EXT_DATA: [(&'static str, &'static str);{}] = [{}];"#,
         type_to_ext.len(),
         type_to_ext.join(",\n    ")
     )
