@@ -58,9 +58,9 @@ fn main() {
         &mut file,
         r#"fn gen_get_extension(name: &str) -> Option<&[&str]> {{
             let seed = {};
-            let lookup = {:?};
+            let lookup = &{:?};
             static RET: [&'static [&'static str]; {}] = [{}];
-            do_static_lookup(seed, {}, &lookup, &RET, name)
+            do_static_lookup(seed, {}, lookup, &RET, name)
         }}"#,
         type_sol.0,
         type_sol.1,
@@ -80,9 +80,9 @@ fn main() {
         &mut file,
         r#"fn gen_get_mime_type(ext: &str) -> Option<&str> {{
             let seed = {};
-            let lookup = {:?};
-            let ret = [{}];
-            do_static_lookup(seed, {}, &lookup, &ret, ext)
+            let lookup = &{:?};
+            let ret = &[{}];
+            do_static_lookup(seed, {}, lookup, ret, ext)
         }}"#,
         ext_sol.0, ext_sol.1, ext_ret, 86
     )
